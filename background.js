@@ -56,14 +56,19 @@ async function checkTabPermissions(tab) {
   let domain = '';
   try {
     const url = new URL(tab.url);
-    domain = url.hostname;
+    domain = url.hostname.toLowerCase().replace('www.', '');
   } catch (e) {
     return; // Skip invalid URLs
   }
 
   // Check if domain is allowed
-  if (allowedDomains.length > 0 && !allowedDomains.includes(domain)) {
-    chrome.tabs.remove(tab.id);
-    return;
+  if (allowedDomains.length > 0) {
+    // Normalize all domains in the allowed list
+    const normalizedAllowedDomains = allowedDomains.map(d => d.toLowerCase().replace('www.', ''));
+    
+    if (!normalizedAllowedDomains.includes(domain)) {
+      chrome.tabs.remove(tab.id);
+      return;
+    }
   }
 } 
