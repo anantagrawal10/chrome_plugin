@@ -22,36 +22,48 @@ chrome.tabs.onCreated.addListener((tab) => {
 async function checkTabPermissions(tab) {
   const { allowedDomains, maxTabs } = await chrome.storage.sync.get(['allowedDomains', 'maxTabs']);
   
-  // Skip checking for chrome:// and about: pages
-  if (tab.url.startsWith('chrome://') || tab.url.startsWith('about:')) {
+  // Skip checking for chrome:// pages
+  if (tab.url.startsWith('chrome://')) {
+    return;
+  }
+
+  // Check total number of tabs first
+  const tabs = await chrome.tabs.query({});
+  const totalTabs = tabs.length;
+  
+  // Only check tab limit if we have a valid maxTabs value
+  if (maxTabs && totalTabs > maxTabs) {
+    // Close the newly created tab
+    chrome.tabs.remove(tab.id);
+    
+    // Show notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon128.png',
+      title: 'Tab Limit Reached',
+      message: `Maximum tab limit (${maxTabs}) reached! Please close some tabs before opening new ones.`,
+      priority: 2
+    });
+    return;
+  }
+
+  // Always allow new tab URLs
+  if (tab.url === 'about:newtab' || tab.url === 'about:blank') {
     return;
   }
 
   // Get the domain from the URL
-  const url = new URL(tab.url);
-  const domain = url.hostname;
+  let domain = '';
+  try {
+    const url = new URL(tab.url);
+    domain = url.hostname;
+  } catch (e) {
+    return; // Skip invalid URLs
+  }
 
   // Check if domain is allowed
   if (allowedDomains.length > 0 && !allowedDomains.includes(domain)) {
     chrome.tabs.remove(tab.id);
     return;
-  }
-
-  // Check total number of tabs
-  const tabs = await chrome.tabs.query({});
-  if (tabs.length > maxTabs) {
-    // Close the newly created tab
-    chrome.tabs.remove(tab.id);
-    
-    // Show alert in the active tab
-    const activeTab = tabs.find(t => t.active);
-    if (activeTab) {
-      chrome.scripting.executeScript({
-        target: { tabId: activeTab.id },
-        func: () => {
-          alert(`Maximum tab limit (${maxTabs}) reached! Please close some tabs before opening new ones.`);
-        }
-      });
-    }
   }
 } 
