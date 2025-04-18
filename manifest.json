@@ -1,25 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "YouTube Query Filter",
+  "name": "Tab Manager",
   "version": "1.0",
-  "description": "Filters YouTube recommendations and search results based on user-defined queries",
+  "description": "Manage tabs by restricting domains and limiting total number of open tabs",
   "permissions": [
+    "tabs",
     "storage",
-    "activeTab",
+    "webNavigation",
     "scripting"
-  ],
-  "host_permissions": [
-    "https://www.youtube.com/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-      "matches": ["https://www.youtube.com/*"],
-      "js": ["content.js"]
-    }
-  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -27,6 +19,10 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
   },
   "icons": {
     "16": "icons/icon16.png",

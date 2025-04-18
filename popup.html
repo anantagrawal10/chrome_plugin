@@ -1,27 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>YouTube Query Filter</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Tab Manager</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+    }
+    .status {
+      margin-bottom: 15px;
+    }
+    .button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .settings {
+      margin-top: 15px;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h2>YouTube Query Filter</h2>
-    <div class="input-group">
-      <input type="text" id="queryInput" placeholder="Enter search query">
-      <button id="addQuery">Add Query</button>
-    </div>
-    <div class="queries-list">
-      <h3>Active Queries</h3>
-      <ul id="queriesList"></ul>
-    </div>
-    <div class="settings">
-      <label>
-        Update Interval (minutes):
-        <input type="number" id="updateInterval" min="1" value="5">
-      </label>
-    </div>
+  <h2>Tab Manager</h2>
+  <div class="status">
+    <p>Current settings:</p>
+    <p>Max tabs: <span id="maxTabs">10</span></p>
+    <p>Allowed domains: <span id="domainCount">0</span></p>
   </div>
+  <button id="optionsButton" class="button">Open Settings</button>
   <script src="popup.js"></script>
 </body>
 </html> 

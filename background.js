@@ -1,49 +1,57 @@
-let updateTimer = null;
-let currentInterval = 5; // Default interval in minutes
-
-// Initialize the extension
+// Initialize default settings
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.get(['updateInterval'], (data) => {
-    if (data.updateInterval) {
-      currentInterval = data.updateInterval;
-    }
-    startUpdateTimer();
+  chrome.storage.sync.set({
+    allowedDomains: [],
+    maxTabs: 10
   });
 });
 
-// Handle messages from popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'updateInterval') {
-    currentInterval = message.interval;
-    startUpdateTimer();
-  } else if (message.action === 'newQuery' || message.action === 'removeQuery') {
-    // Trigger immediate update when queries change
-    updateYouTubeTabs();
-  }
-});
-
-// Start or restart the update timer
-function startUpdateTimer() {
-  if (updateTimer) {
-    clearInterval(updateTimer);
-  }
-  updateTimer = setInterval(() => {
-    updateYouTubeTabs();
-  }, currentInterval * 60 * 1000);
-}
-
-// Update all YouTube tabs
-function updateYouTubeTabs() {
-  chrome.tabs.query({ url: 'https://www.youtube.com/*' }, (tabs) => {
-    tabs.forEach(tab => {
-      chrome.tabs.sendMessage(tab.id, { action: 'updateVideos' });
-    });
-  });
-}
-
-// Listen for tab updates to check if it's a YouTube page
+// Listen for tab updates
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url?.startsWith('https://www.youtube.com/')) {
-    chrome.tabs.sendMessage(tabId, { action: 'updateVideos' });
+  if (changeInfo.status === 'loading') {
+    checkTabPermissions(tab);
   }
-}); 
+});
+
+// Listen for new tab creation
+chrome.tabs.onCreated.addListener((tab) => {
+  checkTabPermissions(tab);
+});
+
+// Check if a tab is allowed and manage tab count
+async function checkTabPermissions(tab) {
+  const { allowedDomains, maxTabs } = await chrome.storage.sync.get(['allowedDomains', 'maxTabs']);
+  
+  // Skip checking for chrome:// and about: pages
+  if (tab.url.startsWith('chrome://') || tab.url.startsWith('about:')) {
+    return;
+  }
+
+  // Get the domain from the URL
+  const url = new URL(tab.url);
+  const domain = url.hostname;
+
+  // Check if domain is allowed
+  if (allowedDomains.length > 0 && !allowedDomains.includes(domain)) {
+    chrome.tabs.remove(tab.id);
+    return;
+  }
+
+  // Check total number of tabs
+  const tabs = await chrome.tabs.query({});
+  if (tabs.length > maxTabs) {
+    // Close the newly created tab
+    chrome.tabs.remove(tab.id);
+    
+    // Show alert in the active tab
+    const activeTab = tabs.find(t => t.active);
+    if (activeTab) {
+      chrome.scripting.executeScript({
+        target: { tabId: activeTab.id },
+        func: () => {
+          alert(`Maximum tab limit (${maxTabs}) reached! Please close some tabs before opening new ones.`);
+        }
+      });
+    }
+  }
+} 

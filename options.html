@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tab Manager Settings</title>
+  <style>
+    body {
+      width: 500px;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="number"] {
+      width: 60px;
+      padding: 5px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 5px;
+    }
+    .button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Tab Manager Settings</h2>
+  <form id="settingsForm">
+    <div class="form-group">
+      <label for="maxTabs">Maximum Number of Tabs:</label>
+      <input type="number" id="maxTabs" min="1" required>
+      <div class="note">When this limit is reached, the oldest non-pinned tab will be closed</div>
+    </div>
+    
+    <div class="form-group">
+      <label for="allowedDomains">Allowed Domains (one per line):</label>
+      <textarea id="allowedDomains" placeholder="example.com&#10;google.com"></textarea>
+      <div class="note">Leave empty to allow all domains. Enter domains without http:// or www.</div>
+    </div>
+    
+    <button type="submit" class="button">Save Settings</button>
+  </form>
+  <script src="options.js"></script>
+</body>
+</html> 
